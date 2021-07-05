@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { WebSiteManagementModels } from "@azure/arm-appservice";
+import { SiteConfigResource } from "@azure/arm-appservice/esm/models";
 import * as fse from 'fs-extra';
 import * as path from 'path';
 import { workspace } from "vscode";
@@ -15,31 +16,23 @@ import { SiteTreeItem } from "../tree/SiteTreeItem";
 export namespace javaUtils {
     const DEFAULT_PORT: string = '8080';
     const PORT_KEY: string = 'PORT';
+    const JAVA_WEB_CONTAINER_REGEX: RegExp = /^(tomcat|wildfly|jboss)/i;
+    const JAVA_SE_REGEX: RegExp = /^java/i;
 
-    function isJavaWebContainerRuntime(runtime: string | undefined): boolean {
-        return !!runtime && /^(tomcat|wildfly)/i.test(runtime);
+    function isJavaWebContainerRuntime(runtime: SiteConfigResource | undefined): boolean {
+        return (!!runtime?.javaContainer && (JAVA_WEB_CONTAINER_REGEX.test(runtime.javaContainer)) || (!!runtime?.linuxFxVersion && JAVA_WEB_CONTAINER_REGEX.test(runtime.linuxFxVersion)));
     }
 
-    function isJavaSERuntime(runtime: string | undefined): boolean {
-        return !!runtime && /^java/i.test(runtime);
+    function isJavaSERuntime(runtime: SiteConfigResource | undefined): boolean {
+        return (!!runtime?.javaContainer && (JAVA_SE_REGEX.test(runtime.javaContainer)) || (!!runtime?.linuxFxVersion && JAVA_SE_REGEX.test(runtime.linuxFxVersion)));
     }
 
-    export function isJavaRuntime(runtime: string | undefined): boolean {
-        return isJavaWebContainerRuntime(runtime) || isJavaSERuntime(runtime);
+    export function isJavaRuntime(siteConfig: SiteConfigResource | undefined): boolean {
+        return isJavaWebContainerRuntime(siteConfig) || isJavaSERuntime(siteConfig);
     }
 
     function isJavaArtifact(artifactPath: string): boolean {
         return /^(.jar|.war)/i.test(path.extname(artifactPath));
-    }
-
-    function getArtifactTypeByJavaRuntime(runtime: string | undefined): string {
-        if (isJavaSERuntime(runtime)) {
-            return 'jar';
-        } else if (isJavaWebContainerRuntime(runtime)) {
-            return 'war';
-        } else {
-            throw new Error(localize('invalidJava', 'Invalid java runtime: {0}', runtime));
-        }
     }
 
     function getJavaArtifactExtensions(): string[] {
@@ -110,14 +103,14 @@ export namespace javaUtils {
         return node.root.client.updateApplicationSettings(appSettings);
     }
 
-    export async function getJavaFileExtensions(siteConfig: WebSiteManagementModels.SiteConfigResource | undefined): Promise<string | string[] | undefined> {
-        if (siteConfig && isJavaRuntime(siteConfig.linuxFxVersion)) {
-            return getArtifactTypeByJavaRuntime(siteConfig.linuxFxVersion);
+    export async function getJavaFileExtensions(siteConfig: WebSiteManagementModels.SiteConfigResource | undefined): Promise<string[] | undefined> {
+        if (isJavaSERuntime(siteConfig)) {
+            return ['jar'];
+        } else if (isJavaWebContainerRuntime(siteConfig)) {
+            return ['war'];
         } else if (await isJavaProject()) {
             return getJavaArtifactExtensions();
         }
-
         return;
     }
-
 }

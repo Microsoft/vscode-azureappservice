@@ -25,6 +25,7 @@ import { runPostDeployTask } from '../postDeploy/runPostDeployTask';
 import { failureMoreInfoSurvey } from './failureMoreInfoSurvey';
 import { promptScmDoBuildDeploy } from './promptScmDoBuildDeploy';
 import { promptToSaveDeployDefaults } from './promptToSaveDeployDefaults';
+import { runPreDeployTask } from './runPreDeployTask';
 import { setPreDeployConfig } from './setPreDeployConfig';
 import { showDeployCompletedMessage } from './showDeployCompletedMessage';
 
@@ -41,7 +42,7 @@ export async function deploy(actionContext: IActionContext, arg1?: vscode.Uri | 
 
     const fileExtensions: string | string[] | undefined = await javaUtils.getJavaFileExtensions(siteConfig);
 
-    const deployPaths: IDeployPaths = await getDeployFsPath(actionContext, arg1, fileExtensions);
+    const deployPaths: IDeployPaths = await getDeployFsPath(actionContext, arg1, fileExtensions?.concat('xml'));
     const context: IDeployContext = Object.assign(actionContext, deployPaths, { defaultAppSetting: constants.configurationSettings.defaultWebAppToDeploy, isNewApp });
 
     // because this is workspace dependant, do it before user selects app
@@ -54,7 +55,7 @@ export async function deploy(actionContext: IActionContext, arg1?: vscode.Uri | 
     // if we already got siteConfig, don't waste time getting it again
     siteConfig = siteConfig ? siteConfig : await node.root.client.getSiteConfig();
 
-    if (javaUtils.isJavaRuntime(siteConfig.linuxFxVersion)) {
+    if (javaUtils.isJavaRuntime(siteConfig)) {
         await javaUtils.configureJavaSEAppSettings(node);
     }
 
@@ -80,7 +81,7 @@ export async function deploy(actionContext: IActionContext, arg1?: vscode.Uri | 
     }
 
     void promptToSaveDeployDefaults(context, node, context.workspaceFolder.uri.fsPath, context.effectiveDeployFsPath);
-    await appservice.runPreDeployTask(context, context.originalDeployFsPath, siteConfig.scmType);
+    await runPreDeployTask(context, siteConfig);
 
     // cancellation moved to after prompts while gathering telemetry
     // cancel the previous detector check from the same web app
