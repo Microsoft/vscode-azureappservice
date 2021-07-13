@@ -40,7 +40,7 @@ export class AppServiceFileSystem extends AzExtTreeFileSystem<FileTreeItem> {
             if (result === DialogResponses.alwaysUpload) {
                 await updateGlobalSetting(showSavePromptKey, false);
             } else if (result === DialogResponses.dontUpload) {
-                throw new UserCancelledError();
+                throw new UserCancelledError('dontUpload');
             }
         }
 

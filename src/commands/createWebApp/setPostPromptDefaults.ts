@@ -121,18 +121,15 @@ async function promptPerformanceWarning(context: IActionContext, asp: WebSiteMan
 
     if (showPerfWarning) {
         context.telemetry.properties.turnOffPerfWarning = 'false';
-        context.telemetry.properties.cancelStep = 'showPerfWarning';
 
         const numberOfSites: number = nonNullProp(asp, 'numberOfSites');
         const createAnyway: MessageItem = { title: localize('createAnyway,', 'Create anyway') };
         const message: string = localize('tooManyPlansWarning', 'The selected plan currently has {0} apps. Deploying more than {1} apps may degrade the performance on the apps in the plan.  Use "Create Web App... (Advanced)" to change the default resource names.', numberOfSites, maxNumberOfSites);
-        const input: MessageItem = await context.ui.showWarningMessage(message, { modal: true }, createAnyway, DialogResponses.dontWarnAgain);
+        const input: MessageItem = await context.ui.showWarningMessage(message, { modal: true, stepName: 'showPerfWarning' }, createAnyway, DialogResponses.dontWarnAgain);
 
         if (input === DialogResponses.dontWarnAgain) {
             context.telemetry.properties.turnOffPerfWarning = 'true';
             await updateGlobalSetting(showPlanPerformanceWarningSetting, false);
         }
-
-        context.telemetry.properties.cancelStep = '';
     }
 }

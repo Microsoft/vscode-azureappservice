@@ -28,7 +28,7 @@ export async function checkLinuxWebAppDownDetector(originalContext: IActionConte
 
         if (!deployment.endTime) {
             // if there's no deployment detected, nothing can be done
-            context.telemetry.properties.cancelStep = 'noDeployResult';
+            context.telemetry.properties.lastStep = 'noDeployResult';
             return;
         }
 
@@ -38,8 +38,7 @@ export async function checkLinuxWebAppDownDetector(originalContext: IActionConte
         while (!detectorErrorMessage) {
             if (tokenSource.token.isCancellationRequested) {
                 // the user cancelled the check by deploying again
-                context.telemetry.properties.cancelStep = 'cancellationToken';
-                throw new UserCancelledError();
+                throw new UserCancelledError('userDeployedAgain');
             }
 
             if (Date.now() > detectorTimeoutMs) {

@@ -99,7 +99,7 @@ export class CosmosDBTreeItem extends AzureParentTreeItem<ISiteTreeRoot> {
             resourceType: 'Database'
         });
         if (!databaseToAdd) {
-            throw new UserCancelledError();
+            throw new UserCancelledError('cosmosDBpickTreeItem');
         }
 
         const appSettingsDict = await this.parent.client.listApplicationSettings();
@@ -282,6 +282,7 @@ export class CosmosDBTreeItem extends AzureParentTreeItem<ISiteTreeRoot> {
         const errorMsg: string = suffixes ? localize('prefixError', 'Connection setting prefix cannot be empty.') : localize('keyError', 'Connection setting key cannot be empty.');
         const appSettingsPrefix: string = await context.ui.showInputBox({
             prompt,
+            stepName: 'connectionSettingPrefix',
             validateInput: (v: string): string | undefined => {
                 if (!v) {
                     return errorMsg;

@@ -40,8 +40,7 @@ export async function validateWebSite(originalContext: IActionContext, deploymen
         while (true) {
             if (tokenSource.token.isCancellationRequested) {
                 // the user cancelled the check by deploying again
-                context.telemetry.properties.canceled = 'true';
-                throw new UserCancelledError();
+                throw new UserCancelledError('userDeployedAgain');
             }
 
             try {

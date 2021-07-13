@@ -103,7 +103,7 @@ export namespace javaUtils {
             }
         });
         if (!port) {
-            throw new UserCancelledError();
+            throw new UserCancelledError('javaPort');
         }
         appSettings.properties[PORT_KEY] = port;
         return node.root.client.updateApplicationSettings(appSettings);

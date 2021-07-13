@@ -55,7 +55,7 @@ export class CosmosDBConnection extends AzExtTreeItem {
                 'removeConnection', 'Are you sure you want to remove connection "{0}"? This will delete the following application settings: {1}',
                 this.label, this.appSettingKeys.map((s) => `"${s}"`).join(', '));
 
-            await context.ui.showWarningMessage(warning, { modal: true }, DialogResponses.deleteResponse);
+            await context.ui.showWarningMessage(warning, { modal: true, stepName: 'removeConnection' }, DialogResponses.deleteResponse);
             for (const key of this.appSettingKeys) {
                 delete appSettings.properties[key];
             }

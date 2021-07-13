@@ -28,7 +28,7 @@ export async function setPreDeployConfigForDotnet(context: IDeployContext, cspro
 
     const notConfiguredForDeploy: string = localize('requiredConfig', 'Required configuration to deploy is missing from "{0}".', context.workspaceFolder.name);
     const addConfigButton: MessageItem = { title: localize('addConfig', "Add Config") };
-    await context.ui.showWarningMessage(notConfiguredForDeploy, { modal: true }, addConfigButton);
+    await context.ui.showWarningMessage(notConfiguredForDeploy, { modal: true, stepName: 'dotnetDeployConfig' }, addConfigButton);
 
     // resolves to "."if it is not a subfolder
     const subfolder: string = path.dirname(path.relative(workspaceFspath, csprojFile));
